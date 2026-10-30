@@ -17,6 +17,7 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
     @Published private(set) var canCapture = false
     @Published private(set) var busy = false
     @Published private(set) var failed = false
+    @Published private(set) var captureDevice: AVCaptureDevice?
 
     private let session = AVCaptureSession()
     private let photos = AVCapturePhotoOutput()
@@ -98,7 +99,7 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
                 device.activeVideoMinFrameDuration = CMTime(value: 1, timescale: 30)
                 device.activeVideoMaxFrameDuration = CMTime(value: 1, timescale: 30)
                 device.unlockForConfiguration()
-                video.connection(with: .video)!.videoRotationAngle = angle
+                video.connection(with: .video)!.videoRotationAngle = 0
                 photos.connection(with: .video)!.videoRotationAngle = angle
                 rotationAngle = angle
                 rotation = coordinator
@@ -107,7 +108,6 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
                     self?.queue.async {
                         guard let self, self.rotation === coordinator, self.rotationAngle != angle else { return }
                         self.session.beginConfiguration()
-                        self.video.connection(with: .video)!.videoRotationAngle = angle
                         self.photos.connection(with: .video)!.videoRotationAngle = angle
                         self.rotationAngle = angle
                         self.session.commitConfiguration()
@@ -118,6 +118,7 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
             selected = lens
             let rawAvailable = photos.availableRawPhotoPixelFormatTypes.contains(where: AVCapturePhotoOutput.isBayerRAWPixelFormat)
             DispatchQueue.main.async {
+                self.captureDevice = device
                 self.lens = lens
                 self.ready = true
                 self.canCapture = rawAvailable

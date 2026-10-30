@@ -35,6 +35,7 @@ final class PreviewRenderer: @unchecked Sendable {
 
 struct PreviewSurface: UIViewRepresentable {
     let renderer: PreviewRenderer
+    let captureDevice: AVCaptureDevice?
     let crop: Bool
     var windowedChanged: ((Bool) -> Void)?
     var directionChanged: ((Bool) -> Void)?
@@ -44,13 +45,21 @@ struct PreviewSurface: UIViewRepresentable {
     }
 
     func updateUIView(_ view: MetalPreview, context: Context) {
+        view.captureDevice = captureDevice
         view.crop = crop
     }
 }
 
 final class MetalPreview: MTKView, MTKViewDelegate {
     var crop = false
+    var captureDevice: AVCaptureDevice? {
+        didSet {
+            guard oldValue !== captureDevice else { return }
+            updateRotation()
+        }
+    }
     private let renderer: PreviewRenderer
+    private var rotation: AVCaptureDevice.RotationCoordinator?
     private var lastSequence = -1
     private var direction: AVCaptureDeviceDirectionCoordinator?
     private let windowedChanged: ((Bool) -> Void)?
@@ -73,6 +82,20 @@ final class MetalPreview: MTKView, MTKViewDelegate {
 
     required init(coder: NSCoder) { fatalError() }
 
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        updateRotation()
+    }
+
+    private func updateRotation() {
+        guard let captureDevice, window != nil else {
+            rotation = nil
+            return
+        }
+        rotation = AVCaptureDevice.RotationCoordinator(device: captureDevice, previewLayer: layer)
+        lastSequence = -1
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
         guard let window, let screen = window.windowScene?.screen, let windowedChanged else { return }
@@ -87,11 +110,12 @@ final class MetalPreview: MTKView, MTKViewDelegate {
     }
 
     func draw(in view: MTKView) {
-        guard let (frame, sequence) = renderer.latest(), sequence != lastSequence,
+        guard let rotation, let (frame, sequence) = renderer.latest(), sequence != lastSequence,
               drawableSize.width > 0, drawableSize.height > 0,
               let drawable = currentDrawable, let command = renderer.commands.makeCommandBuffer() else { return }
         lastSequence = sequence
-        var image = frame
+        let angle = (rotation.videoRotationAngleForHorizonLevelPreview / 90).rounded() * .pi / 2
+        var image = frame.transformed(by: CGAffineTransform(rotationAngle: -angle))
         if crop {
             image = image.cropped(to: image.extent.insetBy(dx: image.extent.width / 4, dy: image.extent.height / 4))
         }

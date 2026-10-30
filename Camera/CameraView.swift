@@ -24,7 +24,7 @@ struct CameraView: View {
             ZStack(alignment: .topLeading) {
                 Color.black
 
-                PreviewSurface(renderer: camera.preview, crop: camera.lens == .crop,
+                PreviewSurface(renderer: camera.preview, captureDevice: camera.captureDevice, crop: camera.lens == .crop,
                                windowedChanged: { windowed = $0 }) { facesView in
                     guard facesView != rearFacesView else { return }
                     rearFacesView = facesView
@@ -75,7 +75,7 @@ struct CameraView: View {
         }
         .sceneAccessory {
             CameraCaptureAccessory(isEnabled: $accessoryEnabled) {
-                PreviewSurface(renderer: camera.preview, crop: camera.lens == .crop)
+                PreviewSurface(renderer: camera.preview, captureDevice: camera.captureDevice, crop: camera.lens == .crop)
                     .background(.black)
                     .ignoresSafeArea()
                     .preferredColorScheme(.dark)
