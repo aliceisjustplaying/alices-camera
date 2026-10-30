@@ -194,12 +194,14 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
                         try await Self.save([folder])
                         try? FileManager.default.removeItem(at: folder)
                     }
-                    DispatchQueue.main.async {
-                        self.lastShot = image
-                        self.busy = false
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                    }
-                } catch { self.fail() }
+                } catch {
+                    if self.lockedSession == nil { self.fail(); return }
+                }
+                DispatchQueue.main.async {
+                    self.lastShot = image
+                    self.busy = false
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                }
             }
         }
     }
@@ -211,10 +213,11 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
                 for (ext, type, uti) in [("JPG", PHAssetResourceType.photo, "public.jpeg"),
                                          ("DNG", .alternatePhoto, "com.adobe.raw-image")] {
                     let options = PHAssetResourceCreationOptions()
-                    options.originalFilename = "\(folder.lastPathComponent).\(ext)"
+                    let filename = "\(folder.lastPathComponent).\(ext)"
+                    options.originalFilename = filename
                     options.uniformTypeIdentifier = uti
                     options.shouldMoveFile = true
-                    asset.addResource(with: type, fileURL: folder.appending(path: options.originalFilename!), options: options)
+                    asset.addResource(with: type, fileURL: folder.appending(path: filename), options: options)
                 }
             }
         }
