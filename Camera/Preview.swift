@@ -84,6 +84,7 @@ final class MetalPreview: MTKView, MTKViewDelegate {
     required init(coder: NSCoder) { fatalError() }
 
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
+        lastSequence = -1
         print("PREVIEW_VIEW size name=\(name) id=\(identity) pixels=\(size)")
     }
 

@@ -67,6 +67,7 @@ struct CameraView: View {
         .ignoresSafeArea()
         .onHingeChange { _, context in
             let status = context.hinge?.status
+            print("HINGE callback status=\(String(describing: status))")
             guard status != hingeStatus else { return }
             hingeStatus = status
             print("HINGE status=\(hingeName)")
@@ -88,7 +89,7 @@ struct CameraView: View {
         var photo: CGRect?
         let splitPhoto = hingeStatus == .fullyOpen
 
-        if let fold, splitPhoto || (hingeStatus == .partiallyOpen && fold.isActive) {
+        if let fold, splitPhoto || hingeStatus == .partiallyOpen {
             let sideBySide = fold.frame.height > fold.frame.width
             let length = sideBySide ? bounds.width : bounds.height
             let start = max(0, min(length, sideBySide ? fold.frame.minX : fold.frame.minY))
