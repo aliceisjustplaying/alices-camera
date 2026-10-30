@@ -1,4 +1,5 @@
 import SwiftUI
+import AVKit
 
 struct CameraView: View {
     @ObservedObject var camera: Camera
@@ -60,6 +61,9 @@ struct CameraView: View {
             }
         }
         .ignoresSafeArea()
+        .onCameraCaptureEvent(isEnabled: camera.canCapture && !camera.busy) { event in
+            if event.phase == .ended { camera.capture() }
+        }
         .sceneAccessory {
             CameraCaptureAccessory(isEnabled: $accessoryEnabled) {
                 PreviewSurface(renderer: camera.preview, crop: camera.lens == .crop)
