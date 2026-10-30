@@ -36,10 +36,11 @@ final class PreviewRenderer: @unchecked Sendable {
 struct PreviewSurface: UIViewRepresentable {
     let renderer: PreviewRenderer
     let crop: Bool
+    var windowedChanged: ((Bool) -> Void)?
     var directionChanged: ((Bool) -> Void)?
 
     func makeUIView(context: Context) -> MetalPreview {
-        MetalPreview(renderer: renderer, directionChanged: directionChanged)
+        MetalPreview(renderer: renderer, directionChanged: directionChanged, windowedChanged: windowedChanged)
     }
 
     func updateUIView(_ view: MetalPreview, context: Context) {
@@ -52,9 +53,12 @@ final class MetalPreview: MTKView, MTKViewDelegate {
     private let renderer: PreviewRenderer
     private var lastSequence = -1
     private var direction: AVCaptureDeviceDirectionCoordinator?
+    private let windowedChanged: ((Bool) -> Void)?
+    private var windowed: Bool?
 
-    init(renderer: PreviewRenderer, directionChanged: ((Bool) -> Void)?) {
+    init(renderer: PreviewRenderer, directionChanged: ((Bool) -> Void)?, windowedChanged: ((Bool) -> Void)?) {
         self.renderer = renderer
+        self.windowedChanged = windowedChanged
         super.init(frame: .zero, device: renderer.device)
         framebufferOnly = false
         colorPixelFormat = .bgra8Unorm
@@ -68,6 +72,15 @@ final class MetalPreview: MTKView, MTKViewDelegate {
     }
 
     required init(coder: NSCoder) { fatalError() }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        guard let window, let screen = window.windowScene?.screen, let windowedChanged else { return }
+        let windowed = window.bounds.size != screen.bounds.size
+        guard windowed != self.windowed else { return }
+        self.windowed = windowed
+        DispatchQueue.main.async { windowedChanged(windowed) }
+    }
 
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
         lastSequence = -1

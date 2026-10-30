@@ -9,6 +9,7 @@ struct CameraView: View {
     @Environment(\.scenePhase) private var phase
     @State private var hingeStatus: DeviceHinge.Status?
     @State private var rearFacesView = false
+    @State private var windowed = false
     @State private var previewEnabled = true
     @State private var accessoryEnabled = false
     @State private var accessoryAvailable = false
@@ -23,7 +24,8 @@ struct CameraView: View {
             ZStack(alignment: .topLeading) {
                 Color.black
 
-                PreviewSurface(renderer: camera.preview, crop: camera.lens == .crop) { facesView in
+                PreviewSurface(renderer: camera.preview, crop: camera.lens == .crop,
+                               windowedChanged: { windowed = $0 }) { facesView in
                     guard facesView != rearFacesView else { return }
                     rearFacesView = facesView
                 }
@@ -93,7 +95,7 @@ struct CameraView: View {
     }
 
     private var supportsPreview: Bool {
-        hingeStatus == .fullyOpen && sizeClass == .regular && !rearFacesView
+        hingeStatus == .fullyOpen && sizeClass == .regular && !windowed && !rearFacesView
     }
 
     private func layout(in geometry: GeometryProxy, fold: ReservedRegion?) -> (preview: CGRect, controls: CGRect, photo: CGRect?) {
@@ -102,7 +104,7 @@ struct CameraView: View {
         var controlPanel = bounds
         var photo: CGRect?
 
-        if sizeClass == .regular && hingeStatus != .closed && !rearFacesView {
+        if sizeClass == .regular && !windowed && hingeStatus != .closed && !rearFacesView {
             var sideBySide = bounds.width > bounds.height
             var start = (sideBySide ? bounds.width : bounds.height) / 2
             var end = start
