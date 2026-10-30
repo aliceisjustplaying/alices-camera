@@ -3,14 +3,15 @@ import SwiftUI
 struct CameraView: View {
     @ObservedObject var camera: Camera
     @State private var hingeStatus: DeviceHinge.Status?
+    @State private var accessoryEnabled = false
     @State private var showingLast = false
 
     var body: some View {
+        let _ = print("ACCESSORY registration enabled=\(accessoryEnabled)")
         GeometryReader { geometry in
             let fold = geometry.reservedRegions(kind: .division, options: .includeInactive,
                                                 layoutDirectionBehavior: .fixed).first
             let layout = layout(in: geometry, fold: fold)
-            let layoutKey = "status=\(hingeName) size=\(geometry.size) fold=\(String(describing: fold?.frame)) active=\(fold?.isActive ?? false)"
 
             ZStack(alignment: .topLeading) {
                 Color.black
@@ -21,15 +22,6 @@ struct CameraView: View {
                     .frame(width: layout.preview.width, height: layout.preview.height)
                     .clipped()
                     .position(x: layout.preview.midX, y: layout.preview.midY)
-                    .sceneAccessory {
-                        CameraCaptureAccessory(isEnabled: .constant(hingeStatus == .fullyOpen)) {
-                            PreviewSurface(renderer: camera.preview, crop: camera.lens == .crop, name: "accessory")
-                                .background(.black)
-                                .ignoresSafeArea()
-                                .preferredColorScheme(.dark)
-                        }
-                        .onAvailabilityChange { print("ACCESSORY available=\($0)") }
-                    }
 
                 if let photo = layout.photo {
                     lastShot
@@ -60,26 +52,27 @@ struct CameraView: View {
                 .frame(width: layout.controls.width, height: layout.controls.height)
                 .position(x: layout.controls.midX, y: layout.controls.midY)
             }
-            .onChange(of: layoutKey, initial: true) { _, key in
-                print("LAYOUT \(key) preview=\(layout.preview) controls=\(layout.controls) photo=\(String(describing: layout.photo))")
-            }
         }
         .ignoresSafeArea()
+        .sceneAccessory {
+            CameraCaptureAccessory(isEnabled: $accessoryEnabled) {
+                PreviewSurface(renderer: camera.preview, crop: camera.lens == .crop, name: "accessory")
+                    .background(.black)
+                    .ignoresSafeArea()
+                    .preferredColorScheme(.dark)
+            }
+            .onAvailabilityChange { print("ACCESSORY available=\($0)") }
+        }
         .onHingeChange { _, context in
             let status = context.hinge?.status
             print("HINGE callback status=\(String(describing: status))")
             guard status != hingeStatus else { return }
             hingeStatus = status
-            print("HINGE status=\(hingeName)")
+            accessoryEnabled = status == .fullyOpen
+            print("HINGE changed status=\(String(describing: status)) accessory=\(accessoryEnabled)")
         }
+        .onChange(of: accessoryEnabled) { _, enabled in print("ACCESSORY binding enabled=\(enabled)") }
         .statusBarHidden()
-    }
-
-    private var hingeName: String {
-        if hingeStatus == .closed { return "closed" }
-        if hingeStatus == .partiallyOpen { return "partiallyOpen" }
-        if hingeStatus == .fullyOpen { return "fullyOpen" }
-        return "none"
     }
 
     private func layout(in geometry: GeometryProxy, fold: ReservedRegion?) -> (preview: CGRect, controls: CGRect, photo: CGRect?) {

@@ -11,7 +11,6 @@ struct AlicesCameraApp: App {
                 .preferredColorScheme(.dark)
                 .task { await camera.start() }
                 .onChange(of: phase, initial: true) { _, phase in
-                    print("SCENE phase=\(phase)")
                     if phase != .inactive {
                         UIApplication.shared.isIdleTimerDisabled = phase == .active
                         camera.setActive(phase == .active)

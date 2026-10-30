@@ -10,9 +10,6 @@ final class PreviewRenderer: @unchecked Sendable {
     private let lock = NSLock()
     private var image: CIImage?
     private var sequence = 0
-    private var receivedAt = 0.0
-    private var inputFrames = 0
-    private var inputStart = CACurrentMediaTime()
 
     init() {
         context = CIContext(mtlDevice: device, options: [.cacheIntermediates: false])
@@ -24,22 +21,14 @@ final class PreviewRenderer: @unchecked Sendable {
         lock.lock()
         image = frame
         sequence += 1
-        receivedAt = CACurrentMediaTime()
         lock.unlock()
-        inputFrames += 1
-        let elapsed = CACurrentMediaTime() - inputStart
-        if elapsed >= 5 {
-            print("PREVIEW_INPUT fps=\(Double(inputFrames) / elapsed)")
-            inputFrames = 0
-            inputStart = CACurrentMediaTime()
-        }
     }
 
-    func latest() -> (CIImage, Int, Double)? {
+    func latest() -> (CIImage, Int)? {
         lock.lock()
         defer { lock.unlock() }
         guard let image else { return nil }
-        return (image, sequence, receivedAt)
+        return (image, sequence)
     }
 }
 
@@ -63,10 +52,6 @@ final class MetalPreview: MTKView, MTKViewDelegate {
     private let name: String
     private let identity = UUID()
     private var lastSequence = -1
-    private let metricsLock = NSLock()
-    private var delivered = 0
-    private var totalLatency = 0.0
-    private var metricsStart = CACurrentMediaTime()
 
     init(renderer: PreviewRenderer, name: String) {
         self.renderer = renderer
@@ -76,20 +61,25 @@ final class MetalPreview: MTKView, MTKViewDelegate {
         colorPixelFormat = .bgra8Unorm
         preferredFramesPerSecond = 60
         delegate = self
-        print("PREVIEW_VIEW init name=\(name) id=\(identity)")
+        print("PREVIEW init name=\(name) id=\(identity)")
     }
 
-    deinit { print("PREVIEW_VIEW deinit name=\(name) id=\(identity)") }
+    deinit { print("PREVIEW deinit name=\(name) id=\(identity)") }
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        print("PREVIEW window name=\(name) id=\(identity) attached=\(window != nil)")
+    }
 
     required init(coder: NSCoder) { fatalError() }
 
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
         lastSequence = -1
-        print("PREVIEW_VIEW size name=\(name) id=\(identity) pixels=\(size)")
+        print("PREVIEW size name=\(name) id=\(identity) pixels=\(size)")
     }
 
     func draw(in view: MTKView) {
-        guard let (frame, sequence, receivedAt) = renderer.latest(), sequence != lastSequence,
+        guard let (frame, sequence) = renderer.latest(), sequence != lastSequence,
               drawableSize.width > 0, drawableSize.height > 0,
               let drawable = currentDrawable, let command = renderer.commands.makeCommandBuffer() else { return }
         lastSequence = sequence
@@ -105,24 +95,6 @@ final class MetalPreview: MTKView, MTKViewDelegate {
         renderer.context.render(image, to: drawable.texture, commandBuffer: command,
                                 bounds: CGRect(origin: .zero, size: drawableSize), colorSpace: renderer.colorSpace)
         command.present(drawable)
-        drawable.addPresentedHandler { [weak self] drawable in
-            guard drawable.presentedTime > 0 else { return }
-            self?.recordDelivery(receivedAt: receivedAt, presentedAt: drawable.presentedTime)
-        }
         command.commit()
-    }
-
-    private func recordDelivery(receivedAt: Double, presentedAt: Double) {
-        metricsLock.lock()
-        defer { metricsLock.unlock() }
-        delivered += 1
-        totalLatency += presentedAt - receivedAt
-        let elapsed = presentedAt - metricsStart
-        if elapsed >= 5 {
-            print("PREVIEW_METAL display=\(name) deliveredFPS=\(Double(delivered) / elapsed) meanLatencyMS=\(1000 * totalLatency / Double(delivered))")
-            delivered = 0
-            totalLatency = 0
-            metricsStart = presentedAt
-        }
     }
 }

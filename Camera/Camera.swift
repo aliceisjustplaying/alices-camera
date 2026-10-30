@@ -46,17 +46,24 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
             self.session.commitConfiguration()
             self.select(.main)
             self.session.startRunning()
-            print("SESSION started initial")
+            #if DEBUG
+            if CommandLine.arguments.contains("--verify-lens-transitions") {
+                for (index, lens) in [Lens.crop, .main, .ultraWide, .crop, .ultraWide, .main].enumerated() {
+                    self.queue.asyncAfter(deadline: .now() + Double(index + 1) * 3) {
+                        print("TRANSITION \(self.selected.title) -> \(lens.title)")
+                        self.select(lens)
+                    }
+                }
+            }
+            #endif
         }
     }
 
     func setActive(_ active: Bool) {
-        print("SESSION activeRequest=\(active)")
         queue.async {
             guard self.input != nil else { return }
             if active && !self.session.isRunning { self.session.startRunning() }
             else if !active && self.session.isRunning { self.session.stopRunning() }
-            print("SESSION running=\(self.session.isRunning)")
         }
     }
 
@@ -77,7 +84,7 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
             if input?.device.uniqueID != device.uniqueID {
                 let replacement = try AVCaptureDeviceInput(device: device)
                 let coordinator = AVCaptureDevice.RotationCoordinator(device: device, previewLayer: nil)
-                let angle = (coordinator.videoRotationAngleForHorizonLevelCapture / 90).rounded() * 90
+                let angle = input == nil ? (coordinator.videoRotationAngleForHorizonLevelCapture / 90).rounded() * 90 : rotationAngle
                 session.beginConfiguration()
                 if let input { session.removeInput(input) }
                 guard session.canAddInput(replacement) else {
@@ -149,21 +156,6 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
                 let settings = AVCapturePhotoSettings(rawPixelFormatType: format)
                 settings.photoQualityPrioritization = .speed
                 settings.flashMode = .off
-                #if DEBUG
-                if let (frame, _, _) = self.preview.latest() {
-                    var image = frame
-                    if self.selected == .crop {
-                        image = image.cropped(to: image.extent.insetBy(dx: image.extent.width / 4, dy: image.extent.height / 4))
-                    }
-                    if let rendered = self.preview.context.createCGImage(image, from: image.extent),
-                       let jpeg = UIImage(cgImage: rendered).jpegData(compressionQuality: 0.95) {
-                        let directory = URL.documentsDirectory.appending(path: "Diagnostics")
-                        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-                        try? jpeg.write(to: directory.appending(path: "\(self.selected.rawValue)-preview.jpg"))
-                        print("PREVIEW_REFERENCE lens=\(self.selected.title) pixels=\(rendered.width)x\(rendered.height)")
-                    }
-                }
-                #endif
                 self.photos.capturePhoto(with: settings, delegate: self)
             }
         }
@@ -186,7 +178,6 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
                 self.fail("RAW decode failed")
                 return
             }
-            print("RAW_DEFAULTS lens=\(lens.title) decoder=\(raw.decoderVersion.rawValue) luma=\(raw.luminanceNoiseReductionAmount) color=\(raw.colorNoiseReductionAmount) sharpness=\(raw.sharpnessAmount) detail=\(raw.detailAmount) contrast=\(raw.contrastAmount) lensCorrection=\(raw.isLensCorrectionEnabled) boost=\(raw.boostAmount) shadows=\(raw.boostShadowAmount) localTone=\(raw.localToneMapAmount)")
             guard let decoded = raw.outputImage else {
                 self.fail("RAW decode failed")
                 return
@@ -210,14 +201,6 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
                 self.fail("DNG staging: \(error)")
                 return
             }
-            #if DEBUG
-            do {
-                let directory = URL.documentsDirectory.appending(path: "Diagnostics")
-                try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-                try dng.write(to: directory.appending(path: "\(lens.rawValue).dng"))
-                try jpeg.write(to: directory.appending(path: "\(lens.rawValue).jpg"))
-            } catch { print("DIAGNOSTICS \(error)") }
-            #endif
             var identifier: String?
             PHPhotoLibrary.shared().performChanges {
                 let asset = PHAssetCreationRequest.forAsset()
