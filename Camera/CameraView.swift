@@ -1,9 +1,12 @@
 import SwiftUI
 import AVKit
+import LockedCameraCapture
 
 struct CameraView: View {
     @ObservedObject var camera: Camera
+    var lockedSession: LockedCameraCaptureSession?
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.scenePhase) private var phase
     @State private var hingeStatus: DeviceHinge.Status?
     @State private var rearFacesView = false
     @State private var previewEnabled = true
@@ -63,6 +66,10 @@ struct CameraView: View {
         .ignoresSafeArea()
         .onCameraCaptureEvent(isEnabled: camera.canCapture && !camera.busy) { event in
             if event.phase == .ended { camera.capture() }
+        }
+        .task { await camera.start(lockedSession: lockedSession) }
+        .onChange(of: phase, initial: true) { _, phase in
+            if phase != .inactive { camera.setActive(phase == .active) }
         }
         .sceneAccessory {
             CameraCaptureAccessory(isEnabled: $accessoryEnabled) {

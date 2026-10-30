@@ -3,6 +3,7 @@ import CoreImage
 import Photos
 import UIKit
 import Combine
+import LockedCameraCapture
 
 final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCapturePhotoCaptureDelegate, @unchecked Sendable {
     enum Lens: Int, CaseIterable {
@@ -28,8 +29,10 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
     private var rotationObservation: NSKeyValueObservation?
     private var rotationAngle: CGFloat = 0
     private var selected = Lens.main
+    private var lockedSession: LockedCameraCaptureSession?
 
-    func start() async {
+    func start(lockedSession: LockedCameraCaptureSession? = nil) async {
+        self.lockedSession = lockedSession
         guard await AVCaptureDevice.requestAccess(for: .video) else {
             fail()
             return
@@ -128,9 +131,11 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
         busy = true
         failed = false
         Task {
-            guard await PHPhotoLibrary.requestAuthorization(for: .addOnly) == .authorized else {
-                fail()
-                return
+            if lockedSession == nil {
+                guard await PHPhotoLibrary.requestAuthorization(for: .addOnly) == .authorized else {
+                    fail()
+                    return
+                }
             }
             queue.async {
                 guard let format = self.photos.availableRawPhotoPixelFormatTypes.first(where: AVCapturePhotoOutput.isBayerRAWPixelFormat) else {
@@ -174,32 +179,69 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
                 return
             }
             let name = UUID().uuidString
-            let rawURL = URL.temporaryDirectory.appending(path: "\(name).DNG")
+            let folder = (self.lockedSession?.sessionContentURL ?? .temporaryDirectory).appending(path: name, directoryHint: .isDirectory)
             do {
-                try dng.write(to: rawURL)
+                try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+                try jpeg.write(to: folder.appending(path: "\(name).JPG"), options: .atomic)
+                try dng.write(to: folder.appending(path: "\(name).DNG"), options: .atomic)
             } catch {
                 self.fail()
                 return
             }
-            PHPhotoLibrary.shared().performChanges {
+            Task {
+                do {
+                    if self.lockedSession == nil || PHPhotoLibrary.authorizationStatus(for: .addOnly) == .authorized {
+                        try await Self.save([folder])
+                        try? FileManager.default.removeItem(at: folder)
+                    }
+                    DispatchQueue.main.async {
+                        self.lastShot = image
+                        self.busy = false
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    }
+                } catch { self.fail() }
+            }
+        }
+    }
+
+    private static func save(_ folders: [URL]) async throws {
+        try await PHPhotoLibrary.shared().performChanges {
+            for folder in folders {
                 let asset = PHAssetCreationRequest.forAsset()
-                let jpgOptions = PHAssetResourceCreationOptions()
-                jpgOptions.originalFilename = "\(name).JPG"
-                jpgOptions.uniformTypeIdentifier = "public.jpeg"
-                let rawOptions = PHAssetResourceCreationOptions()
-                rawOptions.originalFilename = "\(name).DNG"
-                rawOptions.uniformTypeIdentifier = "com.adobe.raw-image"
-                rawOptions.shouldMoveFile = true
-                asset.addResource(with: .photo, data: jpeg, options: jpgOptions)
-                asset.addResource(with: .alternatePhoto, fileURL: rawURL, options: rawOptions)
-            } completionHandler: { saved, error in
-                try? FileManager.default.removeItem(at: rawURL)
-                guard saved else { self.fail(); return }
-                DispatchQueue.main.async {
-                    self.lastShot = image
-                    self.busy = false
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                for (ext, type, uti) in [("JPG", PHAssetResourceType.photo, "public.jpeg"),
+                                         ("DNG", .alternatePhoto, "com.adobe.raw-image")] {
+                    let options = PHAssetResourceCreationOptions()
+                    options.originalFilename = "\(folder.lastPathComponent).\(ext)"
+                    options.uniformTypeIdentifier = uti
+                    options.shouldMoveFile = true
+                    asset.addResource(with: type, fileURL: folder.appending(path: options.originalFilename!), options: options)
                 }
+            }
+        }
+    }
+
+    func importLockedCaptures() async {
+        let manager = LockedCameraCaptureManager.shared
+        for await update in manager.sessionContentUpdates {
+            let urls: [URL]
+            switch update {
+            case .initial(let initial): urls = initial
+            case .added(let url): urls = [url]
+            case .removed: continue
+            @unknown default: continue
+            }
+            for url in urls {
+                do {
+                    let folders = try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: nil)
+                    if !folders.isEmpty {
+                        guard await PHPhotoLibrary.requestAuthorization(for: .addOnly) == .authorized else {
+                            fail()
+                            continue
+                        }
+                        try await Self.save(folders)
+                    }
+                    try await manager.invalidateSessionContent(at: url)
+                } catch { fail() }
             }
         }
     }

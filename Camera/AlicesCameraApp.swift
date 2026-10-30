@@ -9,11 +9,10 @@ struct AlicesCameraApp: App {
         WindowGroup {
             CameraView(camera: camera)
                 .preferredColorScheme(.dark)
-                .task { await camera.start() }
+                .task { await camera.importLockedCaptures() }
                 .onChange(of: phase, initial: true) { _, phase in
                     if phase != .inactive {
                         UIApplication.shared.isIdleTimerDisabled = phase == .active
-                        camera.setActive(phase == .active)
                     }
                 }
         }

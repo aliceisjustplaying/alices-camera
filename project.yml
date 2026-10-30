@@ -13,7 +13,10 @@ targets:
   AlicesCamera:
     type: application
     platform: iOS
-    sources: Camera
+    sources: [Camera, Shared]
+    dependencies:
+      - target: CameraCapture
+      - target: CameraControls
     info:
       path: Camera/Info.plist
       properties:
@@ -30,3 +33,39 @@ targets:
           - UIInterfaceOrientationPortraitUpsideDown
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
+  CameraCapture:
+    type: extensionkit-extension
+    platform: iOS
+    sources:
+      - path: Camera
+        excludes: [AlicesCameraApp.swift, Info.plist]
+      - Capture
+      - Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.aliceisjustplaying.camera.capture
+    info:
+      path: Capture/Info.plist
+      properties:
+        CFBundleDisplayName: "Alice's Camera"
+        CFBundleShortVersionString: '1.0'
+        CFBundleVersion: '1'
+        NSCameraUsageDescription: "Alice's Camera uses the camera to take photos."
+        NSPhotoLibraryAddUsageDescription: "Alice's Camera saves your photos to your library."
+        EXAppExtensionAttributes:
+          EXExtensionPointIdentifier: com.apple.securecapture
+  CameraControls:
+    type: app-extension
+    platform: iOS
+    sources: [Controls, Shared]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.aliceisjustplaying.camera.controls
+    info:
+      path: Controls/Info.plist
+      properties:
+        CFBundleDisplayName: "Alice's Camera"
+        CFBundleShortVersionString: '1.0'
+        CFBundleVersion: '1'
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension

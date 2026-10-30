@@ -8,17 +8,76 @@
 
 /* Begin PBXBuildFile section */
 		0CE61C3732AF9E096486F2D4 /* Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C358AC3F5248CC5636B716 /* Preview.swift */; };
+		0DB01A4DC6CA03DB442613A6 /* CameraIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 203EC2AD37007FC437710C41 /* CameraIntent.swift */; };
 		10500CD390985E69BD415024 /* Camera.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE27B19F4F06263E6CC52D8E /* Camera.swift */; };
 		1A107977BF939048617D901E /* AlicesCameraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBC2667235EB1259931AA26F /* AlicesCameraApp.swift */; };
+		3FCB26241DDDA8549C1F085D /* CameraIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 203EC2AD37007FC437710C41 /* CameraIntent.swift */; };
+		6318B1242BB527A5B1BB3AD7 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD26BF93045E6FF38C1FCF8 /* CameraView.swift */; };
+		7476C03E61DAF3ADC5FBBE4D /* CameraCapture.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = EB961B6CB2C43B9B68491C9B /* CameraCapture.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		8B082BC819092B3CDCD5EE2C /* CameraControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CCB07F774DB3FDDFA50381E /* CameraControls.swift */; };
+		A0A59CE4A7FFA4445CD505B9 /* CameraCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 885768B1130FDCECF768B47B /* CameraCapture.swift */; };
 		AB7F4F4803CEF05BCC20C602 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD26BF93045E6FF38C1FCF8 /* CameraView.swift */; };
+		BE09FEEB2B4B763922E001A7 /* CameraIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 203EC2AD37007FC437710C41 /* CameraIntent.swift */; };
+		CEFA710AE88A9976B58B6E7F /* Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C358AC3F5248CC5636B716 /* Preview.swift */; };
+		EC51242E33D84BF5B3535615 /* CameraControls.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2032C68048AF0FB5FBFD1FCF /* CameraControls.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		F3B2C99926986C568EF2ADCA /* Camera.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE27B19F4F06263E6CC52D8E /* Camera.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		183057E242D0E96FE2C59D9B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 38930330637089DD4256CCC7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C308D0AD09091F56BC6ACC2F;
+			remoteInfo = CameraCapture;
+		};
+		7A08C3EE576813E35DD967C7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 38930330637089DD4256CCC7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FE0C86CD36B2821FD78D8BA9;
+			remoteInfo = CameraControls;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		1132767306DEDA35F032469A /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				EC51242E33D84BF5B3535615 /* CameraControls.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8D84B34918847947C705CDE6 /* Embed ExtensionKit Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(EXTENSIONS_FOLDER_PATH)";
+			dstSubfolderSpec = 16;
+			files = (
+				7476C03E61DAF3ADC5FBBE4D /* CameraCapture.appex in Embed ExtensionKit Extensions */,
+			);
+			name = "Embed ExtensionKit Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		2032C68048AF0FB5FBFD1FCF /* CameraControls.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = CameraControls.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		203EC2AD37007FC437710C41 /* CameraIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraIntent.swift; sourceTree = "<group>"; };
+		3BF5D40BFA8E3DA1FF431380 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		644B42A19C7BCD6869360E0B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		885768B1130FDCECF768B47B /* CameraCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraCapture.swift; sourceTree = "<group>"; };
+		8CCB07F774DB3FDDFA50381E /* CameraControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraControls.swift; sourceTree = "<group>"; };
+		A2FDB8FCA1B1BA22138C519A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		A91CDFFEFCB98E362A79D3BE /* AlicesCamera.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AlicesCamera.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CAD26BF93045E6FF38C1FCF8 /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
 		DE27B19F4F06263E6CC52D8E /* Camera.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Camera.swift; sourceTree = "<group>"; };
 		E3C358AC3F5248CC5636B716 /* Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Preview.swift; sourceTree = "<group>"; };
+		EB961B6CB2C43B9B68491C9B /* CameraCapture.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = CameraCapture.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		EBC2667235EB1259931AA26F /* AlicesCameraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlicesCameraApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -27,6 +86,9 @@
 			isa = PBXGroup;
 			children = (
 				D99B64660528603ACF374493 /* Camera */,
+				DD43E10A5C8664AA8A6C8729 /* Capture */,
+				48C7CBBAEA3C4211E2340375 /* Controls */,
+				3674C30F6121B4C6C40A7F8D /* Shared */,
 				2045B8E26207E07CF13FDA09 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -35,8 +97,27 @@
 			isa = PBXGroup;
 			children = (
 				A91CDFFEFCB98E362A79D3BE /* AlicesCamera.app */,
+				EB961B6CB2C43B9B68491C9B /* CameraCapture.appex */,
+				2032C68048AF0FB5FBFD1FCF /* CameraControls.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		3674C30F6121B4C6C40A7F8D /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				203EC2AD37007FC437710C41 /* CameraIntent.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		48C7CBBAEA3C4211E2340375 /* Controls */ = {
+			isa = PBXGroup;
+			children = (
+				8CCB07F774DB3FDDFA50381E /* CameraControls.swift */,
+				A2FDB8FCA1B1BA22138C519A /* Info.plist */,
+			);
+			path = Controls;
 			sourceTree = "<group>";
 		};
 		D99B64660528603ACF374493 /* Camera */ = {
@@ -51,18 +132,48 @@
 			path = Camera;
 			sourceTree = "<group>";
 		};
+		DD43E10A5C8664AA8A6C8729 /* Capture */ = {
+			isa = PBXGroup;
+			children = (
+				885768B1130FDCECF768B47B /* CameraCapture.swift */,
+				3BF5D40BFA8E3DA1FF431380 /* Info.plist */,
+			);
+			path = Capture;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		C308D0AD09091F56BC6ACC2F /* CameraCapture */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 45C4A4D216FBB7F2401ACDFE /* Build configuration list for PBXNativeTarget "CameraCapture" */;
+			buildPhases = (
+				A2DB5EAFA96D7B2029D1250F /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CameraCapture;
+			packageProductDependencies = (
+			);
+			productName = CameraCapture;
+			productReference = EB961B6CB2C43B9B68491C9B /* CameraCapture.appex */;
+			productType = "com.apple.product-type.extensionkit-extension";
+		};
 		ED4F8F3CFA94000CD32E6F28 /* AlicesCamera */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0DEC5F7A16B92BF8C91F31D3 /* Build configuration list for PBXNativeTarget "AlicesCamera" */;
 			buildPhases = (
 				32C70FBDA97FD0A845B64878 /* Sources */,
+				1132767306DEDA35F032469A /* Embed Foundation Extensions */,
+				8D84B34918847947C705CDE6 /* Embed ExtensionKit Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				AC4A4AF197B2629340AD32D7 /* PBXTargetDependency */,
+				34D8F804566959042CDEFA5A /* PBXTargetDependency */,
 			);
 			name = AlicesCamera;
 			packageProductDependencies = (
@@ -70,6 +181,23 @@
 			productName = AlicesCamera;
 			productReference = A91CDFFEFCB98E362A79D3BE /* AlicesCamera.app */;
 			productType = "com.apple.product-type.application";
+		};
+		FE0C86CD36B2821FD78D8BA9 /* CameraControls */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C5F4539008491953AEADE502 /* Build configuration list for PBXNativeTarget "CameraControls" */;
+			buildPhases = (
+				0FD4FD1EB10A46EF368D74A1 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CameraControls;
+			packageProductDependencies = (
+			);
+			productName = CameraControls;
+			productReference = 2032C68048AF0FB5FBFD1FCF /* CameraControls.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -80,7 +208,15 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					C308D0AD09091F56BC6ACC2F = {
+						DevelopmentTeam = A3F67DDZAJ;
+						ProvisioningStyle = Automatic;
+					};
 					ED4F8F3CFA94000CD32E6F28 = {
+						DevelopmentTeam = A3F67DDZAJ;
+						ProvisioningStyle = Automatic;
+					};
+					FE0C86CD36B2821FD78D8BA9 = {
 						DevelopmentTeam = A3F67DDZAJ;
 						ProvisioningStyle = Automatic;
 					};
@@ -101,23 +237,60 @@
 			projectRoot = "";
 			targets = (
 				ED4F8F3CFA94000CD32E6F28 /* AlicesCamera */,
+				C308D0AD09091F56BC6ACC2F /* CameraCapture */,
+				FE0C86CD36B2821FD78D8BA9 /* CameraControls */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
+		0FD4FD1EB10A46EF368D74A1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8B082BC819092B3CDCD5EE2C /* CameraControls.swift in Sources */,
+				0DB01A4DC6CA03DB442613A6 /* CameraIntent.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		32C70FBDA97FD0A845B64878 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				1A107977BF939048617D901E /* AlicesCameraApp.swift in Sources */,
 				10500CD390985E69BD415024 /* Camera.swift in Sources */,
+				3FCB26241DDDA8549C1F085D /* CameraIntent.swift in Sources */,
 				AB7F4F4803CEF05BCC20C602 /* CameraView.swift in Sources */,
 				0CE61C3732AF9E096486F2D4 /* Preview.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A2DB5EAFA96D7B2029D1250F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F3B2C99926986C568EF2ADCA /* Camera.swift in Sources */,
+				A0A59CE4A7FFA4445CD505B9 /* CameraCapture.swift in Sources */,
+				BE09FEEB2B4B763922E001A7 /* CameraIntent.swift in Sources */,
+				6318B1242BB527A5B1BB3AD7 /* CameraView.swift in Sources */,
+				CEFA710AE88A9976B58B6E7F /* Preview.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		34D8F804566959042CDEFA5A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FE0C86CD36B2821FD78D8BA9 /* CameraControls */;
+			targetProxy = 7A08C3EE576813E35DD967C7 /* PBXContainerItemProxy */;
+		};
+		AC4A4AF197B2629340AD32D7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C308D0AD09091F56BC6ACC2F /* CameraCapture */;
+			targetProxy = 183057E242D0E96FE2C59D9B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		04EF7B1F8BEF67261F652C76 /* Debug */ = {
@@ -277,6 +450,64 @@
 			};
 			name = Debug;
 		};
+		C6091A08323641886301C26F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = Capture/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.aliceisjustplaying.camera.capture;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		CF74FECA9A22F5A410718FBC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = Controls/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.aliceisjustplaying.camera.controls;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		E1A37C077B929B510B069BC0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = Controls/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.aliceisjustplaying.camera.controls;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		EA8927A23ED92D10E0B38785 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = Capture/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.aliceisjustplaying.camera.capture;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -294,6 +525,24 @@
 			buildConfigurations = (
 				9587BD3C9140558AD46E69D7 /* Debug */,
 				83E5B92CE86DF9FDCD6077C9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		45C4A4D216FBB7F2401ACDFE /* Build configuration list for PBXNativeTarget "CameraCapture" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C6091A08323641886301C26F /* Debug */,
+				EA8927A23ED92D10E0B38785 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C5F4539008491953AEADE502 /* Build configuration list for PBXNativeTarget "CameraControls" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CF74FECA9A22F5A410718FBC /* Debug */,
+				E1A37C077B929B510B069BC0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
