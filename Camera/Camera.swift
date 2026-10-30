@@ -132,6 +132,7 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
                     return
                 }
                 let settings = AVCapturePhotoSettings(rawPixelFormatType: format)
+                settings.photoQualityPrioritization = .speed
                 settings.flashMode = .off
                 self.photos.capturePhoto(with: settings, delegate: self)
             }
