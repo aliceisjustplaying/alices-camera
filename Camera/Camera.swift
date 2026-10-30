@@ -31,7 +31,7 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
 
     func start() async {
         guard await AVCaptureDevice.requestAccess(for: .video) else {
-            fail("Camera access denied")
+            fail()
             return
         }
         queue.async {
@@ -45,17 +45,11 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
             self.session.addOutput(self.video)
             self.session.commitConfiguration()
             self.select(.main)
-            self.session.startRunning()
-            #if DEBUG
-            if CommandLine.arguments.contains("--verify-lens-transitions") {
-                for (index, lens) in [Lens.crop, .main, .ultraWide, .crop, .ultraWide, .main].enumerated() {
-                    self.queue.asyncAfter(deadline: .now() + Double(index + 1) * 3) {
-                        print("TRANSITION \(self.selected.title) -> \(lens.title)")
-                        self.select(lens)
-                    }
-                }
+            if self.session.isMultitaskingCameraAccessSupported {
+                self.session.isMultitaskingCameraAccessEnabled = true
             }
-            #endif
+            print("MULTITASK supported=\(self.session.isMultitaskingCameraAccessSupported) enabled=\(self.session.isMultitaskingCameraAccessEnabled)")
+            self.session.startRunning()
         }
     }
 
@@ -115,27 +109,19 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
                         self.photos.connection(with: .video)!.videoRotationAngle = angle
                         self.rotationAngle = angle
                         self.session.commitConfiguration()
-                        print("ROTATION angle=\(angle)")
                     }
                 }
                 session.commitConfiguration()
-                print("INPUT changed=true angleBeforeCommit=\(angle)")
-            } else {
-                print("INPUT reused angle=\(rotationAngle)")
             }
             selected = lens
-            let raw = photos.availableRawPhotoPixelFormatTypes.filter(AVCapturePhotoOutput.isBayerRAWPixelFormat)
-            print("LENS \(lens.title) device=\(device.deviceType.rawValue) zoom=\(device.videoZoomFactor) Bayer=\(raw) ProRAW=\(photos.isAppleProRAWEnabled)")
-            if lens == .crop {
-                print("RAW_2X software center crop for preview/JPEG; full 1x Bayer DNG; AVCapturePhotoOutput requires videoZoomFactor=1")
-            }
+            let rawAvailable = photos.availableRawPhotoPixelFormatTypes.contains(where: AVCapturePhotoOutput.isBayerRAWPixelFormat)
             DispatchQueue.main.async {
                 self.lens = lens
                 self.ready = true
-                self.canCapture = !raw.isEmpty
-                self.failed = raw.isEmpty
+                self.canCapture = rawAvailable
+                self.failed = !rawAvailable
             }
-        } catch { fail("Lens configuration: \(error)") }
+        } catch { fail() }
     }
 
     func capture() {
@@ -144,13 +130,12 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
         failed = false
         Task {
             guard await PHPhotoLibrary.requestAuthorization(for: .addOnly) == .authorized else {
-                fail("Photos add-only access denied")
+                fail()
                 return
             }
             queue.async {
-                guard let device = self.input?.device, device.videoZoomFactor == 1,
-                      let format = self.photos.availableRawPhotoPixelFormatTypes.first(where: AVCapturePhotoOutput.isBayerRAWPixelFormat) else {
-                    self.fail("Bayer RAW unavailable")
+                guard let format = self.photos.availableRawPhotoPixelFormatTypes.first(where: AVCapturePhotoOutput.isBayerRAWPixelFormat) else {
+                    self.fail()
                     return
                 }
                 let settings = AVCapturePhotoSettings(rawPixelFormatType: format)
@@ -167,19 +152,15 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
     }
 
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
-        if let error { fail("Capture: \(error)"); return }
-        guard photo.isRawPhoto, let dng = photo.fileDataRepresentation() else {
-            fail("Missing Bayer DNG")
+        if error != nil { fail(); return }
+        guard let dng = photo.fileDataRepresentation() else {
+            fail()
             return
         }
         let lens = selected
         queue.async {
-            guard let raw = CIRAWFilter(imageData: dng, identifierHint: "com.adobe.raw-image") else {
-                self.fail("RAW decode failed")
-                return
-            }
-            guard let decoded = raw.outputImage else {
-                self.fail("RAW decode failed")
+            guard let decoded = CIRAWFilter(imageData: dng, identifierHint: "com.adobe.raw-image")?.outputImage else {
+                self.fail()
                 return
             }
             var monochrome = decoded.applyingFilter("CIColorControls", parameters: [kCIInputSaturationKey: 0])
@@ -190,7 +171,7 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
             guard let rendered = self.preview.context.createCGImage(monochrome, from: monochrome.extent, format: .RGBA8, colorSpace: CGColorSpace(name: CGColorSpace.sRGB)),
                   let jpeg = UIImage(cgImage: rendered).jpegData(compressionQuality: 0.95),
                   let image = UIImage(data: jpeg) else {
-                self.fail("JPEG encode failed")
+                self.fail()
                 return
             }
             let name = UUID().uuidString
@@ -198,10 +179,9 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
             do {
                 try dng.write(to: rawURL)
             } catch {
-                self.fail("DNG staging: \(error)")
+                self.fail()
                 return
             }
-            var identifier: String?
             PHPhotoLibrary.shared().performChanges {
                 let asset = PHAssetCreationRequest.forAsset()
                 let jpgOptions = PHAssetResourceCreationOptions()
@@ -213,11 +193,9 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
                 rawOptions.shouldMoveFile = true
                 asset.addResource(with: .photo, data: jpeg, options: jpgOptions)
                 asset.addResource(with: .alternatePhoto, fileURL: rawURL, options: rawOptions)
-                identifier = asset.placeholderForCreatedAsset?.localIdentifier
             } completionHandler: { saved, error in
                 try? FileManager.default.removeItem(at: rawURL)
-                guard saved else { self.fail("Photos save: \(String(describing: error))"); return }
-                print("SAVED asset=\(identifier ?? "nil") lens=\(lens.title) resources=photo:JPEG,alternatePhoto:DNG raw=\(photo.resolvedSettings.rawPhotoDimensions.width)x\(photo.resolvedSettings.rawPhotoDimensions.height) Bayer=true JPEG=\(jpeg.count) DNG=\(dng.count)")
+                guard saved else { self.fail(); return }
                 DispatchQueue.main.async {
                     self.lastShot = image
                     self.busy = false
@@ -228,11 +206,10 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
     }
 
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishCaptureFor resolvedSettings: AVCaptureResolvedPhotoSettings, error: Error?) {
-        if let error { fail("Capture completion: \(error)") }
+        if error != nil { fail() }
     }
 
-    private func fail(_ message: String) {
-        print("ERROR \(message)")
+    private func fail() {
         DispatchQueue.main.async {
             self.busy = false
             self.failed = true

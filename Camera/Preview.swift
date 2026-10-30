@@ -1,6 +1,7 @@
 import SwiftUI
 import MetalKit
 import CoreImage
+import AVKit
 
 final class PreviewRenderer: @unchecked Sendable {
     let device = MTLCreateSystemDefaultDevice()!
@@ -35,10 +36,10 @@ final class PreviewRenderer: @unchecked Sendable {
 struct PreviewSurface: UIViewRepresentable {
     let renderer: PreviewRenderer
     let crop: Bool
-    let name: String
+    var directionChanged: ((Bool) -> Void)?
 
     func makeUIView(context: Context) -> MetalPreview {
-        MetalPreview(renderer: renderer, name: name)
+        MetalPreview(renderer: renderer, directionChanged: directionChanged)
     }
 
     func updateUIView(_ view: MetalPreview, context: Context) {
@@ -49,33 +50,27 @@ struct PreviewSurface: UIViewRepresentable {
 final class MetalPreview: MTKView, MTKViewDelegate {
     var crop = false
     private let renderer: PreviewRenderer
-    private let name: String
-    private let identity = UUID()
     private var lastSequence = -1
+    private var direction: AVCaptureDeviceDirectionCoordinator?
 
-    init(renderer: PreviewRenderer, name: String) {
+    init(renderer: PreviewRenderer, directionChanged: ((Bool) -> Void)?) {
         self.renderer = renderer
-        self.name = name
         super.init(frame: .zero, device: renderer.device)
         framebufferOnly = false
         colorPixelFormat = .bgra8Unorm
         preferredFramesPerSecond = 60
         delegate = self
-        print("PREVIEW init name=\(name) id=\(identity)")
-    }
-
-    deinit { print("PREVIEW deinit name=\(name) id=\(identity)") }
-
-    override func didMoveToWindow() {
-        super.didMoveToWindow()
-        print("PREVIEW window name=\(name) id=\(identity) attached=\(window != nil)")
+        if let directionChanged {
+            direction = AVCaptureDeviceDirectionCoordinator(view: self, deviceTypes: [.builtInWideAngleCamera, .builtInUltraWideCamera]) { devices in
+                directionChanged(devices.forwardFacingDeviceDescriptors.contains { $0.position == .back })
+            }
+        }
     }
 
     required init(coder: NSCoder) { fatalError() }
 
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
         lastSequence = -1
-        print("PREVIEW size name=\(name) id=\(identity) pixels=\(size)")
     }
 
     func draw(in view: MTKView) {

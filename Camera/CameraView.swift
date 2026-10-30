@@ -2,12 +2,13 @@ import SwiftUI
 
 struct CameraView: View {
     @ObservedObject var camera: Camera
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var hingeStatus: DeviceHinge.Status?
+    @State private var rearFacesView = false
     @State private var accessoryEnabled = false
     @State private var showingLast = false
 
     var body: some View {
-        let _ = print("ACCESSORY registration enabled=\(accessoryEnabled)")
         GeometryReader { geometry in
             let fold = geometry.reservedRegions(kind: .division, options: .includeInactive,
                                                 layoutDirectionBehavior: .fixed).first
@@ -16,7 +17,11 @@ struct CameraView: View {
             ZStack(alignment: .topLeading) {
                 Color.black
 
-                PreviewSurface(renderer: camera.preview, crop: camera.lens == .crop, name: "inner")
+                PreviewSurface(renderer: camera.preview, crop: camera.lens == .crop) { facesView in
+                    guard facesView != rearFacesView else { return }
+                    rearFacesView = facesView
+                    print("HANDOFF rearFacesView=\(facesView)")
+                }
                     .background(.black)
                     .accessibilityIdentifier("monochrome-viewfinder")
                     .frame(width: layout.preview.width, height: layout.preview.height)
@@ -52,26 +57,29 @@ struct CameraView: View {
                 .frame(width: layout.controls.width, height: layout.controls.height)
                 .position(x: layout.controls.midX, y: layout.controls.midY)
             }
+            .onChange(of: layout.preview, initial: true) { _, _ in
+                print("WINDOW size=\(geometry.size) sizeClass=\(String(describing: sizeClass)) fold=\(String(describing: fold?.frame)) preview=\(layout.preview) controls=\(layout.controls) photo=\(String(describing: layout.photo))")
+            }
         }
         .ignoresSafeArea()
         .sceneAccessory {
             CameraCaptureAccessory(isEnabled: $accessoryEnabled) {
-                PreviewSurface(renderer: camera.preview, crop: camera.lens == .crop, name: "accessory")
+                PreviewSurface(renderer: camera.preview, crop: camera.lens == .crop)
                     .background(.black)
                     .ignoresSafeArea()
                     .preferredColorScheme(.dark)
+                    .allowsHitTesting(false)
             }
-            .onAvailabilityChange { print("ACCESSORY available=\($0)") }
         }
         .onHingeChange { _, context in
             let status = context.hinge?.status
-            print("HINGE callback status=\(String(describing: status))")
             guard status != hingeStatus else { return }
             hingeStatus = status
-            accessoryEnabled = status == .fullyOpen
-            print("HINGE changed status=\(String(describing: status)) accessory=\(accessoryEnabled)")
         }
-        .onChange(of: accessoryEnabled) { _, enabled in print("ACCESSORY binding enabled=\(enabled)") }
+        .onChange(of: hingeStatus == .fullyOpen && sizeClass == .regular && !rearFacesView, initial: true) { _, enabled in
+            accessoryEnabled = enabled
+            print("ACCESSORY enabled=\(enabled)")
+        }
         .statusBarHidden()
     }
 
@@ -80,24 +88,36 @@ struct CameraView: View {
         var preview = bounds
         var controlPanel = bounds
         var photo: CGRect?
-        let splitPhoto = hingeStatus == .fullyOpen
 
-        if let fold, splitPhoto || hingeStatus == .partiallyOpen {
-            let sideBySide = fold.frame.height > fold.frame.width
-            let length = sideBySide ? bounds.width : bounds.height
-            let start = max(0, min(length, sideBySide ? fold.frame.minX : fold.frame.minY))
-            let end = max(start, min(length, sideBySide ? fold.frame.maxX : fold.frame.maxY))
+        if sizeClass == .regular && hingeStatus != .closed && !rearFacesView {
+            var sideBySide = bounds.width > bounds.height
+            var start = (sideBySide ? bounds.width : bounds.height) / 2
+            var end = start
+            var atFold = false
+            if let frame = fold?.frame {
+                let vertical = frame.height > frame.width
+                let crosses = vertical
+                    ? frame.minX > 0 && frame.maxX < bounds.width && frame.minY <= 0 && frame.maxY >= bounds.height
+                    : frame.minY > 0 && frame.maxY < bounds.height && frame.minX <= 0 && frame.maxX >= bounds.width
+                if crosses {
+                    sideBySide = vertical
+                    start = vertical ? frame.minX : frame.minY
+                    end = vertical ? frame.maxX : frame.maxY
+                    atFold = true
+                }
+            }
             let second: CGRect
 
             if sideBySide {
                 preview = CGRect(x: 0, y: 0, width: start, height: bounds.height)
-                second = CGRect(x: end, y: 0, width: length - end, height: bounds.height)
+                second = CGRect(x: end, y: 0, width: bounds.width - end, height: bounds.height)
             } else {
                 preview = CGRect(x: 0, y: 0, width: bounds.width, height: start)
-                second = CGRect(x: 0, y: end, width: bounds.width, height: length - end)
+                second = CGRect(x: 0, y: end, width: bounds.width, height: bounds.height - end)
             }
-            controlPanel = splitPhoto ? preview : second
-            photo = splitPhoto ? second : nil
+            let controlsBelow = atFold && hingeStatus == .partiallyOpen
+            controlPanel = controlsBelow ? second : preview
+            photo = controlsBelow ? nil : second
         }
 
         let insets = geometry.safeAreaInsets
