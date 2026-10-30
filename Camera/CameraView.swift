@@ -30,20 +30,22 @@ struct CameraView: View {
 
     private var viewfinder: some View {
         ZStack(alignment: .bottom) {
-            feed
+            feed(name: "inner")
             controls
         }
         .clipped()
         .sceneAccessory {
             CameraCaptureAccessory {
-                compactView
+                feed(name: "accessory")
+                    .ignoresSafeArea()
+                    .preferredColorScheme(.dark)
             }
         }
     }
 
     private var compactView: some View {
         ZStack(alignment: .bottom) {
-            feed
+            feed(name: "closed").ignoresSafeArea()
             if showingLast, let last = camera.lastShot {
                 Image(uiImage: last)
                     .resizable()
@@ -75,19 +77,12 @@ struct CameraView: View {
                 controls
             }
         }
+        .background(.black)
         .clipped()
     }
 
-    private var feed: some View {
-        GeometryReader { geometry in
-            if let frame = camera.frame {
-                Image(uiImage: frame)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: geometry.size.width, height: geometry.size.height)
-                    .clipped()
-            }
-        }
+    private func feed(name: String) -> some View {
+        PreviewSurface(renderer: camera.preview, crop: camera.lens == .crop, name: name)
         .background(.black)
         .accessibilityIdentifier("monochrome-viewfinder")
     }

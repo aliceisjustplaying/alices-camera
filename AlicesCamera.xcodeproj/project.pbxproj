@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0CE61C3732AF9E096486F2D4 /* Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3C358AC3F5248CC5636B716 /* Preview.swift */; };
 		10500CD390985E69BD415024 /* Camera.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE27B19F4F06263E6CC52D8E /* Camera.swift */; };
 		1A107977BF939048617D901E /* AlicesCameraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBC2667235EB1259931AA26F /* AlicesCameraApp.swift */; };
 		AB7F4F4803CEF05BCC20C602 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD26BF93045E6FF38C1FCF8 /* CameraView.swift */; };
@@ -17,6 +18,7 @@
 		A91CDFFEFCB98E362A79D3BE /* AlicesCamera.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AlicesCamera.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CAD26BF93045E6FF38C1FCF8 /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
 		DE27B19F4F06263E6CC52D8E /* Camera.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Camera.swift; sourceTree = "<group>"; };
+		E3C358AC3F5248CC5636B716 /* Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Preview.swift; sourceTree = "<group>"; };
 		EBC2667235EB1259931AA26F /* AlicesCameraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlicesCameraApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -44,6 +46,7 @@
 				DE27B19F4F06263E6CC52D8E /* Camera.swift */,
 				CAD26BF93045E6FF38C1FCF8 /* CameraView.swift */,
 				644B42A19C7BCD6869360E0B /* Info.plist */,
+				E3C358AC3F5248CC5636B716 /* Preview.swift */,
 			);
 			path = Camera;
 			sourceTree = "<group>";
@@ -110,6 +113,7 @@
 				1A107977BF939048617D901E /* AlicesCameraApp.swift in Sources */,
 				10500CD390985E69BD415024 /* Camera.swift in Sources */,
 				AB7F4F4803CEF05BCC20C602 /* CameraView.swift in Sources */,
+				0CE61C3732AF9E096486F2D4 /* Preview.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
