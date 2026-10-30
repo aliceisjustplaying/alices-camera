@@ -1,0 +1,32 @@
+name: AlicesCamera
+options:
+  deploymentTarget:
+    iOS: '27.1'
+settings:
+  base:
+    PRODUCT_BUNDLE_IDENTIFIER: com.aliceisjustplaying.camera
+    SWIFT_VERSION: '5.0'
+    TARGETED_DEVICE_FAMILY: '1'
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: 62NCUR7FDB
+targets:
+  AlicesCamera:
+    type: application
+    platform: iOS
+    sources: Camera
+    info:
+      path: Camera/Info.plist
+      properties:
+        CFBundleDisplayName: "Alice's Camera"
+        CFBundleShortVersionString: '1.0'
+        CFBundleVersion: '1'
+        NSCameraUsageDescription: "Alice's Camera uses the camera to take photos."
+        NSPhotoLibraryAddUsageDescription: "Alice's Camera saves your photos to your library."
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
