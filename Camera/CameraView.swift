@@ -5,7 +5,9 @@ struct CameraView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var hingeStatus: DeviceHinge.Status?
     @State private var rearFacesView = false
+    @State private var previewEnabled = true
     @State private var accessoryEnabled = false
+    @State private var accessoryAvailable = false
     @State private var showingLast = false
 
     var body: some View {
@@ -20,7 +22,6 @@ struct CameraView: View {
                 PreviewSurface(renderer: camera.preview, crop: camera.lens == .crop) { facesView in
                     guard facesView != rearFacesView else { return }
                     rearFacesView = facesView
-                    print("HANDOFF rearFacesView=\(facesView)")
                 }
                     .background(.black)
                     .accessibilityIdentifier("monochrome-viewfinder")
@@ -57,9 +58,6 @@ struct CameraView: View {
                 .frame(width: layout.controls.width, height: layout.controls.height)
                 .position(x: layout.controls.midX, y: layout.controls.midY)
             }
-            .onChange(of: layout.preview, initial: true) { _, _ in
-                print("WINDOW size=\(geometry.size) sizeClass=\(String(describing: sizeClass)) fold=\(String(describing: fold?.frame)) preview=\(layout.preview) controls=\(layout.controls) photo=\(String(describing: layout.photo))")
-            }
         }
         .ignoresSafeArea()
         .sceneAccessory {
@@ -70,17 +68,21 @@ struct CameraView: View {
                     .preferredColorScheme(.dark)
                     .allowsHitTesting(false)
             }
+            .onAvailabilityChange { accessoryAvailable = $0 }
         }
         .onHingeChange { _, context in
             let status = context.hinge?.status
             guard status != hingeStatus else { return }
             hingeStatus = status
         }
-        .onChange(of: hingeStatus == .fullyOpen && sizeClass == .regular && !rearFacesView, initial: true) { _, enabled in
+        .onChange(of: previewEnabled && supportsPreview, initial: true) { _, enabled in
             accessoryEnabled = enabled
-            print("ACCESSORY enabled=\(enabled)")
         }
         .statusBarHidden()
+    }
+
+    private var supportsPreview: Bool {
+        hingeStatus == .fullyOpen && sizeClass == .regular && !rearFacesView
     }
 
     private func layout(in geometry: GeometryProxy, fold: ReservedRegion?) -> (preview: CGRect, controls: CGRect, photo: CGRect?) {
@@ -167,6 +169,19 @@ struct CameraView: View {
             }
             .accessibilityIdentifier("lens")
             .disabled(camera.busy || !camera.ready)
+
+            if supportsPreview {
+                Button { previewEnabled.toggle() } label: {
+                    Image(systemName: previewEnabled ? "rectangle.on.rectangle" : "rectangle.on.rectangle.slash")
+                        .font(.system(size: 17, weight: .semibold))
+                        .frame(width: 44, height: 44)
+                }
+                .accessibilityLabel("Duo Preview")
+                .accessibilityValue(previewEnabled ? "On" : "Off")
+                .accessibilityIdentifier("duo-preview")
+                .disabled(!accessoryAvailable)
+                .opacity(accessoryAvailable ? 1 : 0.45)
+            }
 
             Button { camera.capture() } label: {
                 ZStack {

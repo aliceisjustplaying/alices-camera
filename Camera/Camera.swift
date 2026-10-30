@@ -48,7 +48,6 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
             if self.session.isMultitaskingCameraAccessSupported {
                 self.session.isMultitaskingCameraAccessEnabled = true
             }
-            print("MULTITASK supported=\(self.session.isMultitaskingCameraAccessSupported) enabled=\(self.session.isMultitaskingCameraAccessEnabled)")
             self.session.startRunning()
         }
     }
