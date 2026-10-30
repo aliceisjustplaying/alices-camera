@@ -8,7 +8,7 @@ settings:
     SWIFT_VERSION: '5.0'
     TARGETED_DEVICE_FAMILY: '1'
     CODE_SIGN_STYLE: Automatic
-    DEVELOPMENT_TEAM: 62NCUR7FDB
+    DEVELOPMENT_TEAM: A3F67DDZAJ
 targets:
   AlicesCamera:
     type: application
