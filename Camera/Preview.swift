@@ -61,6 +61,7 @@ final class MetalPreview: MTKView, MTKViewDelegate {
     var crop = false
     private let renderer: PreviewRenderer
     private let name: String
+    private let identity = UUID()
     private var lastSequence = -1
     private let metricsLock = NSLock()
     private var delivered = 0
@@ -75,11 +76,16 @@ final class MetalPreview: MTKView, MTKViewDelegate {
         colorPixelFormat = .bgra8Unorm
         preferredFramesPerSecond = 60
         delegate = self
+        print("PREVIEW_VIEW init name=\(name) id=\(identity)")
     }
+
+    deinit { print("PREVIEW_VIEW deinit name=\(name) id=\(identity)") }
 
     required init(coder: NSCoder) { fatalError() }
 
-    func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {}
+    func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
+        print("PREVIEW_VIEW size name=\(name) id=\(identity) pixels=\(size)")
+    }
 
     func draw(in view: MTKView) {
         guard let (frame, sequence, receivedAt) = renderer.latest(), sequence != lastSequence,

@@ -26,6 +26,7 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
     private var input: AVCaptureDeviceInput?
     private var rotation: AVCaptureDevice.RotationCoordinator?
     private var rotationObservation: NSKeyValueObservation?
+    private var rotationAngle: CGFloat = 0
     private var selected = Lens.main
 
     func start() async {
@@ -45,14 +46,17 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
             self.session.commitConfiguration()
             self.select(.main)
             self.session.startRunning()
+            print("SESSION started initial")
         }
     }
 
     func setActive(_ active: Bool) {
+        print("SESSION activeRequest=\(active)")
         queue.async {
             guard self.input != nil else { return }
-            if active { self.session.startRunning() }
-            else { self.session.stopRunning() }
+            if active && !self.session.isRunning { self.session.startRunning() }
+            else if !active && self.session.isRunning { self.session.stopRunning() }
+            print("SESSION running=\(self.session.isRunning)")
         }
     }
 
@@ -70,25 +74,48 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
             guard let device = AVCaptureDevice.default(type, for: .video, position: .back) else {
                 throw NSError(domain: "Camera", code: 1)
             }
-            let replacement = try AVCaptureDeviceInput(device: device)
-            session.beginConfiguration()
-            if let input { session.removeInput(input) }
-            guard session.canAddInput(replacement) else {
-                if let input { session.addInput(input) }
+            if input?.device.uniqueID != device.uniqueID {
+                let replacement = try AVCaptureDeviceInput(device: device)
+                let coordinator = AVCaptureDevice.RotationCoordinator(device: device, previewLayer: nil)
+                let angle = (coordinator.videoRotationAngleForHorizonLevelCapture / 90).rounded() * 90
+                session.beginConfiguration()
+                if let input { session.removeInput(input) }
+                guard session.canAddInput(replacement) else {
+                    if let input { session.addInput(input) }
+                    session.commitConfiguration()
+                    throw NSError(domain: "Camera", code: 2)
+                }
+                session.addInput(replacement)
+                input = replacement
+                try device.lockForConfiguration()
+                device.videoZoomFactor = 1
+                if device.activeFormat.isAutoVideoFrameRateSupported {
+                    device.isAutoVideoFrameRateEnabled = false
+                }
+                device.activeVideoMinFrameDuration = CMTime(value: 1, timescale: 30)
+                device.activeVideoMaxFrameDuration = CMTime(value: 1, timescale: 30)
+                device.unlockForConfiguration()
+                video.connection(with: .video)!.videoRotationAngle = angle
+                photos.connection(with: .video)!.videoRotationAngle = angle
+                rotationAngle = angle
+                rotation = coordinator
+                rotationObservation = coordinator.observe(\.videoRotationAngleForHorizonLevelCapture, options: [.new]) { [weak self] coordinator, _ in
+                    let angle = (coordinator.videoRotationAngleForHorizonLevelCapture / 90).rounded() * 90
+                    self?.queue.async {
+                        guard let self, self.rotation === coordinator, self.rotationAngle != angle else { return }
+                        self.session.beginConfiguration()
+                        self.video.connection(with: .video)!.videoRotationAngle = angle
+                        self.photos.connection(with: .video)!.videoRotationAngle = angle
+                        self.rotationAngle = angle
+                        self.session.commitConfiguration()
+                        print("ROTATION angle=\(angle)")
+                    }
+                }
                 session.commitConfiguration()
-                throw NSError(domain: "Camera", code: 2)
+                print("INPUT changed=true angleBeforeCommit=\(angle)")
+            } else {
+                print("INPUT reused angle=\(rotationAngle)")
             }
-            session.addInput(replacement)
-            input = replacement
-            session.commitConfiguration()
-            try device.lockForConfiguration()
-            device.videoZoomFactor = 1
-            if device.activeFormat.isAutoVideoFrameRateSupported {
-                device.isAutoVideoFrameRateEnabled = false
-            }
-            device.activeVideoMinFrameDuration = CMTime(value: 1, timescale: 30)
-            device.activeVideoMaxFrameDuration = CMTime(value: 1, timescale: 30)
-            device.unlockForConfiguration()
             selected = lens
             let raw = photos.availableRawPhotoPixelFormatTypes.filter(AVCapturePhotoOutput.isBayerRAWPixelFormat)
             print("LENS \(lens.title) device=\(device.deviceType.rawValue) zoom=\(device.videoZoomFactor) Bayer=\(raw) ProRAW=\(photos.isAppleProRAWEnabled)")
@@ -96,19 +123,6 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
                 print("RAW_2X software center crop for preview/JPEG; full 1x Bayer DNG; AVCapturePhotoOutput requires videoZoomFactor=1")
             }
             DispatchQueue.main.async {
-                let coordinator = AVCaptureDevice.RotationCoordinator(device: device, previewLayer: nil)
-                self.rotation = coordinator
-                self.rotationObservation = coordinator.observe(\.videoRotationAngleForHorizonLevelCapture, options: [.initial, .new]) { coordinator, _ in
-                    let angle = coordinator.videoRotationAngleForHorizonLevelCapture
-                    self.queue.async {
-                        if let connection = self.video.connection(with: .video), connection.isVideoRotationAngleSupported(angle) {
-                            connection.videoRotationAngle = angle
-                        }
-                        if let connection = self.photos.connection(with: .video), connection.isVideoRotationAngleSupported(angle) {
-                            connection.videoRotationAngle = angle
-                        }
-                    }
-                }
                 self.lens = lens
                 self.ready = true
                 self.canCapture = !raw.isEmpty
@@ -135,6 +149,21 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
                 let settings = AVCapturePhotoSettings(rawPixelFormatType: format)
                 settings.photoQualityPrioritization = .speed
                 settings.flashMode = .off
+                #if DEBUG
+                if let (frame, _, _) = self.preview.latest() {
+                    var image = frame
+                    if self.selected == .crop {
+                        image = image.cropped(to: image.extent.insetBy(dx: image.extent.width / 4, dy: image.extent.height / 4))
+                    }
+                    if let rendered = self.preview.context.createCGImage(image, from: image.extent),
+                       let jpeg = UIImage(cgImage: rendered).jpegData(compressionQuality: 0.95) {
+                        let directory = URL.documentsDirectory.appending(path: "Diagnostics")
+                        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+                        try? jpeg.write(to: directory.appending(path: "\(self.selected.rawValue)-preview.jpg"))
+                        print("PREVIEW_REFERENCE lens=\(self.selected.title) pixels=\(rendered.width)x\(rendered.height)")
+                    }
+                }
+                #endif
                 self.photos.capturePhoto(with: settings, delegate: self)
             }
         }
@@ -153,7 +182,12 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
         }
         let lens = selected
         queue.async {
-            guard let raw = CIRAWFilter(imageData: dng, identifierHint: "com.adobe.raw-image"), let decoded = raw.outputImage else {
+            guard let raw = CIRAWFilter(imageData: dng, identifierHint: "com.adobe.raw-image") else {
+                self.fail("RAW decode failed")
+                return
+            }
+            print("RAW_DEFAULTS lens=\(lens.title) decoder=\(raw.decoderVersion.rawValue) luma=\(raw.luminanceNoiseReductionAmount) color=\(raw.colorNoiseReductionAmount) sharpness=\(raw.sharpnessAmount) detail=\(raw.detailAmount) contrast=\(raw.contrastAmount) lensCorrection=\(raw.isLensCorrectionEnabled) boost=\(raw.boostAmount) shadows=\(raw.boostShadowAmount) localTone=\(raw.localToneMapAmount)")
+            guard let decoded = raw.outputImage else {
                 self.fail("RAW decode failed")
                 return
             }
