@@ -33,7 +33,7 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
     private var selected = Lens.main
     private var lockedSession: LockedCameraCaptureSession?
 
-    func start(lockedSession: LockedCameraCaptureSession? = nil) async {
+    func start(lockedSession: LockedCameraCaptureSession?) async {
         self.lockedSession = lockedSession
         guard await AVCaptureDevice.requestAccess(for: .video) else {
             fail()
