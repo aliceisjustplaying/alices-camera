@@ -133,11 +133,9 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
         busy = true
         failed = false
         Task {
-            if lockedSession == nil {
-                guard await PHPhotoLibrary.requestAuthorization(for: .addOnly) == .authorized else {
-                    fail()
-                    return
-                }
+            if lockedSession == nil, await PHPhotoLibrary.requestAuthorization(for: .addOnly) != .authorized {
+                fail()
+                return
             }
             queue.async {
                 guard let format = self.photos.availableRawPhotoPixelFormatTypes.first(where: AVCapturePhotoOutput.isBayerRAWPixelFormat) else {
@@ -158,8 +156,7 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
     }
 
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
-        if error != nil { fail(); return }
-        guard let dng = photo.fileDataRepresentation() else {
+        guard error == nil, let dng = photo.fileDataRepresentation() else {
             fail()
             return
         }
