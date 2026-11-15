@@ -63,12 +63,6 @@ struct CameraView: View {
                 }
                 .frame(width: layout.controls.width, height: layout.controls.height)
                 .position(x: layout.controls.midX, y: layout.controls.midY)
-
-                if layout.photo == nil, !showingLast, hingeStatus == .closed {
-                    let frame = thumbnailFrame(in: geometry, controls: layout.controls)
-                    thumbnail
-                        .position(x: frame.midX, y: frame.midY)
-                }
             }
         }
         .ignoresSafeArea()
@@ -149,23 +143,6 @@ struct CameraView: View {
         return (preview, controls.isNull ? .zero : controls, photo)
     }
 
-    private func thumbnailFrame(in geometry: GeometryProxy, controls: CGRect) -> CGRect {
-        var frame = CGRect(x: controls.maxX - 20 - 68, y: controls.maxY - 108 - 20 - 88,
-                           width: 68, height: 88)
-        let occlusions = geometry.reservedRegions(kind: .occlusion, layoutDirectionBehavior: .fixed)
-            .map { region in
-                CGRect(x: region.frame.minX - region.margins.leading,
-                       y: region.frame.minY - region.margins.top,
-                       width: region.frame.width + region.margins.leading + region.margins.trailing,
-                       height: region.frame.height + region.margins.top + region.margins.bottom)
-            }
-            .sorted { $0.maxY > $1.maxY }
-        for occlusion in occlusions where frame.intersects(occlusion) {
-            frame.origin.y = occlusion.minY - frame.height - 20
-        }
-        return frame
-    }
-
     private var thumbnail: some View {
         Group {
             if let last = camera.lastShot {
@@ -236,10 +213,14 @@ struct CameraView: View {
             .disabled(!camera.canCapture || camera.busy)
             .opacity(camera.canCapture ? 1 : 0.45)
 
-            Image(systemName: camera.failed ? "exclamationmark.triangle.fill" : "circle.fill")
-                .font(.system(size: camera.failed ? 20 : 6))
-                .frame(width: 30)
-                .opacity(camera.failed ? 1 : 0)
+            if hingeStatus == .closed, !showingLast, !camera.failed, camera.lastShot != nil {
+                thumbnail
+            } else {
+                Image(systemName: camera.failed ? "exclamationmark.triangle.fill" : "circle.fill")
+                    .font(.system(size: camera.failed ? 20 : 6))
+                    .frame(width: 30)
+                    .opacity(camera.failed ? 1 : 0)
+            }
         }
         .foregroundStyle(.white)
         .padding(20)
