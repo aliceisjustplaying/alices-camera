@@ -53,7 +53,7 @@ struct CameraView: View {
                 VStack {
                     HStack {
                         Spacer()
-                        if layout.photo == nil, !showingLast {
+                        if layout.photo == nil, !showingLast, hingeStatus != .closed {
                             thumbnail
                         }
                     }
@@ -63,6 +63,12 @@ struct CameraView: View {
                 }
                 .frame(width: layout.controls.width, height: layout.controls.height)
                 .position(x: layout.controls.midX, y: layout.controls.midY)
+
+                if layout.photo == nil, !showingLast, hingeStatus == .closed {
+                    let frame = thumbnailFrame(in: geometry, controls: layout.controls)
+                    thumbnail
+                        .position(x: frame.midX, y: frame.midY)
+                }
             }
         }
         .ignoresSafeArea()
@@ -141,6 +147,23 @@ struct CameraView: View {
                                 height: max(0, bounds.height - insets.top - insets.bottom))
         let controls = controlPanel.intersection(safeBounds)
         return (preview, controls.isNull ? .zero : controls, photo)
+    }
+
+    private func thumbnailFrame(in geometry: GeometryProxy, controls: CGRect) -> CGRect {
+        var frame = CGRect(x: controls.maxX - 20 - 68, y: controls.maxY - 108 - 20 - 88,
+                           width: 68, height: 88)
+        let occlusions = geometry.reservedRegions(kind: .occlusion, layoutDirectionBehavior: .fixed)
+            .map { region in
+                CGRect(x: region.frame.minX - region.margins.leading,
+                       y: region.frame.minY - region.margins.top,
+                       width: region.frame.width + region.margins.leading + region.margins.trailing,
+                       height: region.frame.height + region.margins.top + region.margins.bottom)
+            }
+            .sorted { $0.maxY > $1.maxY }
+        for occlusion in occlusions where frame.intersects(occlusion) {
+            frame.origin.y = occlusion.minY - frame.height - 20
+        }
+        return frame
     }
 
     private var thumbnail: some View {
