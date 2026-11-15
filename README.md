@@ -42,6 +42,6 @@ xcrun devicectl device install app --device <device> \
 xcrun devicectl device process launch --device <device> com.aliceisjustplaying.camera
 ```
 
-`DEVELOPER_DIR` points the command line tools at Xcode instead of the standalone Command Line Tools. `<device>` is the phone's name or UDID from `xcrun devicectl list devices`. The app embeds two extensions, the locked camera and the control, so the build signs three bundle IDs. Signing uses the team in `project.yml`. A different team needs its own `DEVELOPMENT_TEAM` and bundle IDs for all three targets in `project.yml`, and the project regenerated with `xcodegen`.
+`DEVELOPER_DIR` points the command line tools at Xcode instead of the standalone Command Line Tools. `<device>` is the phone's name or UDID from `xcrun devicectl list devices`. The app embeds two extensions, the locked camera and the control, so the build signs three bundle IDs. Set your signing team by adding `DEVELOPMENT_TEAM` to a `Local.xcconfig` file.
 
 With a free personal team, the install stops opening after 7 days until it's reinstalled.

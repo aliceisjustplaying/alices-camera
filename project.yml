@@ -8,11 +8,13 @@ settings:
     SWIFT_VERSION: '5.0'
     TARGETED_DEVICE_FAMILY: '1'
     CODE_SIGN_STYLE: Automatic
-    DEVELOPMENT_TEAM: A3F67DDZAJ
 targets:
   AlicesCamera:
     type: application
     platform: iOS
+    configFiles:
+      Debug: Signing.xcconfig
+      Release: Signing.xcconfig
     sources: [Camera, Shared, Assets.xcassets]
     settings:
       base:
@@ -39,6 +41,9 @@ targets:
   CameraCapture:
     type: extensionkit-extension
     platform: iOS
+    configFiles:
+      Debug: Signing.xcconfig
+      Release: Signing.xcconfig
     sources:
       - path: Camera
         excludes: [AlicesCameraApp.swift, Info.plist]
@@ -60,6 +65,9 @@ targets:
   CameraControls:
     type: app-extension
     platform: iOS
+    configFiles:
+      Debug: Signing.xcconfig
+      Release: Signing.xcconfig
     sources: [Controls, Shared]
     settings:
       base:

@@ -67,6 +67,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0BAF747DFFBC42097F62753F /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
 		113FD240CC552AA2C5598419 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2032C68048AF0FB5FBFD1FCF /* CameraControls.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = CameraControls.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		203EC2AD37007FC437710C41 /* CameraIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraIntent.swift; sourceTree = "<group>"; };
@@ -88,12 +89,22 @@
 			isa = PBXGroup;
 			children = (
 				113FD240CC552AA2C5598419 /* Assets.xcassets */,
+				168263DF713AB2FEF78CE7A5 /* alices-camera */,
 				D99B64660528603ACF374493 /* Camera */,
 				DD43E10A5C8664AA8A6C8729 /* Capture */,
 				48C7CBBAEA3C4211E2340375 /* Controls */,
 				3674C30F6121B4C6C40A7F8D /* Shared */,
 				2045B8E26207E07CF13FDA09 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		168263DF713AB2FEF78CE7A5 /* alices-camera */ = {
+			isa = PBXGroup;
+			children = (
+				0BAF747DFFBC42097F62753F /* Signing.xcconfig */,
+			);
+			name = "alices-camera";
+			path = .;
 			sourceTree = "<group>";
 		};
 		2045B8E26207E07CF13FDA09 /* Products */ = {
@@ -213,15 +224,12 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					C308D0AD09091F56BC6ACC2F = {
-						DevelopmentTeam = A3F67DDZAJ;
 						ProvisioningStyle = Automatic;
 					};
 					ED4F8F3CFA94000CD32E6F28 = {
-						DevelopmentTeam = A3F67DDZAJ;
 						ProvisioningStyle = Automatic;
 					};
 					FE0C86CD36B2821FD78D8BA9 = {
-						DevelopmentTeam = A3F67DDZAJ;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -344,7 +352,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = A3F67DDZAJ;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -411,7 +418,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = A3F67DDZAJ;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -437,6 +443,7 @@
 		};
 		83E5B92CE86DF9FDCD6077C9 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0BAF747DFFBC42097F62753F /* Signing.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -452,6 +459,7 @@
 		};
 		9587BD3C9140558AD46E69D7 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0BAF747DFFBC42097F62753F /* Signing.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -467,6 +475,7 @@
 		};
 		C6091A08323641886301C26F /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0BAF747DFFBC42097F62753F /* Signing.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = Capture/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -481,6 +490,7 @@
 		};
 		CF74FECA9A22F5A410718FBC /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0BAF747DFFBC42097F62753F /* Signing.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = Controls/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -496,6 +506,7 @@
 		};
 		E1A37C077B929B510B069BC0 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0BAF747DFFBC42097F62753F /* Signing.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = Controls/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -511,6 +522,7 @@
 		};
 		EA8927A23ED92D10E0B38785 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0BAF747DFFBC42097F62753F /* Signing.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = Capture/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
