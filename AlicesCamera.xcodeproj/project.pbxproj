@@ -14,6 +14,7 @@
 		3FCB26241DDDA8549C1F085D /* CameraIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 203EC2AD37007FC437710C41 /* CameraIntent.swift */; };
 		6318B1242BB527A5B1BB3AD7 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD26BF93045E6FF38C1FCF8 /* CameraView.swift */; };
 		7476C03E61DAF3ADC5FBBE4D /* CameraCapture.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = EB961B6CB2C43B9B68491C9B /* CameraCapture.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		81977EA1A28265622F61EB40 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 113FD240CC552AA2C5598419 /* Assets.xcassets */; };
 		8B082BC819092B3CDCD5EE2C /* CameraControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CCB07F774DB3FDDFA50381E /* CameraControls.swift */; };
 		A0A59CE4A7FFA4445CD505B9 /* CameraCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 885768B1130FDCECF768B47B /* CameraCapture.swift */; };
 		AB7F4F4803CEF05BCC20C602 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD26BF93045E6FF38C1FCF8 /* CameraView.swift */; };
@@ -66,6 +67,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		113FD240CC552AA2C5598419 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2032C68048AF0FB5FBFD1FCF /* CameraControls.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = CameraControls.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		203EC2AD37007FC437710C41 /* CameraIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraIntent.swift; sourceTree = "<group>"; };
 		3BF5D40BFA8E3DA1FF431380 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -85,6 +87,7 @@
 		10BDC517F42784E1F04148A5 = {
 			isa = PBXGroup;
 			children = (
+				113FD240CC552AA2C5598419 /* Assets.xcassets */,
 				D99B64660528603ACF374493 /* Camera */,
 				DD43E10A5C8664AA8A6C8729 /* Capture */,
 				48C7CBBAEA3C4211E2340375 /* Controls */,
@@ -166,6 +169,7 @@
 			buildConfigurationList = 0DEC5F7A16B92BF8C91F31D3 /* Build configuration list for PBXNativeTarget "AlicesCamera" */;
 			buildPhases = (
 				32C70FBDA97FD0A845B64878 /* Sources */,
+				E4F31F41302ED8611A10A547 /* Resources */,
 				1132767306DEDA35F032469A /* Embed Foundation Extensions */,
 				8D84B34918847947C705CDE6 /* Embed ExtensionKit Extensions */,
 			);
@@ -242,6 +246,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		E4F31F41302ED8611A10A547 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				81977EA1A28265622F61EB40 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		0FD4FD1EB10A46EF368D74A1 /* Sources */ = {

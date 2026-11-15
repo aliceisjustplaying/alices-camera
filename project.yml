@@ -13,7 +13,10 @@ targets:
   AlicesCamera:
     type: application
     platform: iOS
-    sources: [Camera, Shared]
+    sources: [Camera, Shared, Assets.xcassets]
+    settings:
+      base:
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
     dependencies:
       - target: CameraCapture
       - target: CameraControls
