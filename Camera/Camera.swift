@@ -11,7 +11,8 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
         var title: String { ["0.5×", "1×", "2×"][rawValue] }
     }
 
-    @Published private(set) var lastShot: UIImage?
+    @Published private(set) var lastShot = UIImage(contentsOfFile: Camera.lastShotURL.path)
+    private static let lastShotURL = URL.documentsDirectory.appending(path: "last.jpg")
     @Published private(set) var lens = Lens.main
     @Published private(set) var ready = false
     @Published private(set) var canCapture = false
@@ -198,6 +199,7 @@ final class Camera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBu
                 } catch {
                     if self.lockedSession == nil { self.fail(); return }
                 }
+                try? jpeg.write(to: Self.lastShotURL, options: .atomic)
                 DispatchQueue.main.async {
                     self.lastShot = image
                     self.busy = false
