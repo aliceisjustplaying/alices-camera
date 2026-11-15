@@ -2,6 +2,8 @@
 
 A small black-and-white RAW camera for iPhone Duo. The whole app, lock screen camera included, is 680 lines of Swift.
 
+![Alice's Camera open on an iPhone Duo, with the viewfinder on the left and the last photo on the right](docs/landscape.jpg)
+
 ## What it does
 
 **Live view.** The viewfinder shows the rear camera in black and white at 30 fps.
@@ -19,6 +21,12 @@ A small black-and-white RAW camera for iPhone Duo. The whole app, lock screen ca
 - Half open: viewfinder on one side of the fold, controls on the other.
 - Closed: full-screen viewfinder with a thumbnail of the last photo beside the shutter.
 - Split screen: full viewfinder with the thumbnail in the top corner.
+
+<p>
+<img src="docs/portrait.jpg" width="32%" alt="Open and tall: viewfinder on top, last photo below">
+<img src="docs/half-open.jpg" width="32%" alt="Half open on a table: viewfinder on the top half, controls on the bottom half">
+<img src="docs/closed.jpg" width="32%" alt="Closed: full-screen viewfinder with the last photo beside the shutter">
+</p>
 
 Tap the thumbnail to see the photo and tap again to go back.
 
