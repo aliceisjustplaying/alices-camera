@@ -1,6 +1,6 @@
 # Alice's Camera
 
-A small black-and-white RAW camera for iPhone Duo.
+A small black-and-white RAW camera for iPhone Duo. The whole app, lock screen camera included, is 680 lines of Swift.
 
 ## What it does
 
